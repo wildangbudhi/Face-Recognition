@@ -104,6 +104,12 @@ class FaceRecognition:
                         
                         count += 1
                         cv2.putText(frame, str(Y_Pred) + ' : ' + str(round(Y_Pred_proba[0], 2)) + '%', (rect[0], rect[2] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, ( 0, 155, 255 ) )
+                    else:
+                        if((count % 100) == 0): 
+                            log_file.write(now.strftime("%d/%m/%Y %H:%M:%S") + ' --> ' + 'Unknown person' + '\n')
+                        
+                        count += 1
+                        cv2.putText(frame, 'Unknown person', (rect[0], rect[2] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, ( 0, 155, 255 ) )
 
                 cv2.imshow('Frame',frame)
                 if cv2.waitKey(25) & 0xFF == ord('q'): break

@@ -95,13 +95,13 @@ class FaceRecognition:
                     Y_Pred = out_encoder.inverse_transform(Y_Pred)[0]
                     print(Y_Pred)
 
-                    if((count % 10000) == 0): 
+                    if((count % 100) == 0): 
                         log_file.write(now.strftime("%d/%m/%Y %H:%M:%S") + ' --> ' + Y_Pred + '\n')
                         count = 0
                     
                     count += 1
                     
-                    cv2.putText(frame, str(Y_Pred), (rect[0], rect[2] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, ( 0, 155, 255 ) )
+                    cv2.putText(frame, str(Y_Pred), (rect[0], rect[2] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, ( 0, 155, 255 ) )
 
                 cv2.imshow('Frame',frame)
                 if cv2.waitKey(25) & 0xFF == ord('q'): break

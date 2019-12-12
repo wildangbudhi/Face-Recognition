@@ -24,7 +24,7 @@ class FaceRecognition:
         return np.array([ [ face['box'][0], ( face['box'][0] + face['box'][2] ), face['box'][1], ( face['box'][1] + face['box'][3] ) ] for face in faces ], dtype=float)
     
     def makeReactangleFaces(self, frame :np.ndarray, rect :np.ndarray):
-        cv2.rectangle(frame, ( rect[0], rect[1] ), ( rect[2], rect[3] ), ( 0, 155, 255 ), 2)
+        cv2.rectangle(frame, ( int(rect[0]), int(rect[2]) ), ( int(rect[1]), int(rect[3]) ), ( 0, 155, 255 ), 2)
     
     def saveFaceFromFrame(self, path :str, frame :np.ndarray):
         cv2.imwrite(path, frame)
@@ -56,13 +56,20 @@ class FaceRecognition:
         np.savez_compressed(base_dir + '/CompressedImages/' + filename, X=np.asarray(X), Y=np.asarray(Y))
     
     def predict(self):
-        data = np.load(base_dir + '/images/Labeled/', 'dataset.npz')
+        data = np.load(base_dir + '/CompressedImages/dataset.npz')
         X_Train, Y_Train = data['X'], data['Y']
+
+        # TestData
+        X_Test = cv2.imread('rangga.jpg')
+        facesRect = self.detectFaces(X_Test)
+        self.makeReactangleFaces(X_Test, facesRect[0])
+        cv2.imshow('Image', X_Test)
+        cv2.waitKey(0)
         
 
 def main():
     a = FaceRecognition()
-    a.loadDatasetAndEmbedding(base_dir + '/images/Labeled/', 'dataset.npz')
+    a.predict()
 
 if __name__ == "__main__":
     main()

@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from keras.models import load_model
 from mtcnn.mtcnn import MTCNN
+import tensorflow as tf
 
 base_dir = os.path.dirname(__file__)
 
@@ -21,5 +22,18 @@ class FaceRecognition:
     
     def saveFaceFromFrame(self, path :str, frame :np.ndarray):
         cv2.imwrite(path, frame)
+    
+    def loadDatasetAndCompress(self, path :str):
+        X, Y = [], []
+
+        for subdir in os.listdir(path):
+            subdir_path = path + subdir + '/'
+
+            print(subdir_path)
+
+
+with tf.device('/CPU:0'):
+    a = FaceRecognition()
+    a.loadDatasetAndCompress(base_dir + '/images/Labeled/')
 
     # Kurang Train Model, Deteksi, dll

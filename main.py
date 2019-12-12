@@ -5,10 +5,10 @@ from keras.models import load_model
 from mtcnn.mtcnn import MTCNN
 import tensorflow as tf
 from numpy import load
-from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import Normalizer
 from sklearn.svm import SVC
+from datetime import datetime
 
 base_dir = os.path.dirname(__file__)
 
@@ -85,11 +85,14 @@ class FaceRecognition:
         SVCModel = SVC(kernel='linear', probability=True)
         SVCModel.fit(X_Train, Y_Train)
 
+        log_file = open('log.txt', 'w')
+
         cap = cv2.VideoCapture(0)
 
         if (cap.isOpened()== False): print("Error opening video stream or file")
 
         while(cap.isOpened()):
+            now = datetime.now()
             ret, frame = cap.read()
             if(ret):
                 rectFaces = self.detectFaces(frame)
@@ -102,6 +105,8 @@ class FaceRecognition:
                     Y_Pred = SVCModel.predict(face)
                     Y_Pred = out_encoder.inverse_transform(Y_Pred)[0]
                     print(Y_Pred)
+
+                    log_file.write(now.strftime("%d/%m/%Y %H:%M:%S") + ' --> ' + Y_Pred)
                     
                     cv2.putText(frame, str(Y_Pred), (rect[0], rect[2] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, ( 0, 155, 255 ) )
 
@@ -109,6 +114,7 @@ class FaceRecognition:
                 if cv2.waitKey(25) & 0xFF == ord('q'): break
             else: break
 
+        log_file.close()
         cap.release()
         cv2.destroyAllWindows()
 
@@ -118,5 +124,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    # Kurang Train Model, Deteksi, dll

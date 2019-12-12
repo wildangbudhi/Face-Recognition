@@ -69,22 +69,21 @@ class FaceRecognition:
         
         return np.asarray(facesFeatures)
 
-    def train(self, path :str):
+    def run(self, path :str):
         data = np.load(path)
-        self.X_Train, self.Y_Train = data['X'], data['Y']
+        X_Train, Y_Train = data['X'], data['Y']
 
         in_encoder = Normalizer(norm='l2')
-        self.X_Train = in_encoder.transform(self.X_Train)
-        self.X_Test = in_encoder.transform(self.X_Test.reshape(1, -1))
+        X_Train = in_encoder.transform(X_Train)
+        X_Test = in_encoder.transform(X_Test.reshape(1, -1))
 
-        self.out_encoder = LabelEncoder()
-        self.out_encoder.fit(self.Y_Train)
-        self.Y_Train = self.out_encoder.transform(self.Y_Train)
+        out_encoder = LabelEncoder()
+        out_encoder.fit(Y_Train)
+        Y_Train = out_encoder.transform(Y_Train)
 
-        self.SVCModel = SVC(kernel='linear', probability=True)
-        self.SVCModel.fit(self.X_Train, self.Y_Train)
+        SVCModel = SVC(kernel='linear', probability=True)
+        SVCModel.fit(self.X_Train, self.Y_Train)
 
-    def runCamera(self):
         cap = cv2.VideoCapture(0)
 
         if (cap.isOpened()== False): print("Error opening video stream or file")
@@ -104,8 +103,7 @@ class FaceRecognition:
 
 def main():
     a = FaceRecognition()
-    a.train(base_dir + '/CompressedImages/dataset.npz')
-    a.runCamera()
+    a.run(base_dir + '/CompressedImages/dataset.npz')
 
 if __name__ == "__main__":
     main()

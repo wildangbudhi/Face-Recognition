@@ -23,17 +23,24 @@ class FaceRecognition:
     def saveFaceFromFrame(self, path :str, frame :np.ndarray):
         cv2.imwrite(path, frame)
     
-    def loadDatasetAndCompress(self, path :str):
+    def loadDatasetAndCompress(self, path :str, filename :str):
+        print('Load Dataset and Compressing')
+
         X, Y = [], []
 
-        for subdir in os.listdir(path):
-            subdir_path = path + subdir + '/'
-
-            print(subdir_path)
+        for label in os.listdir(path):
+            for file in os.listdir(path + label + '/'):
+                X.append( cv2.imread(path + label + '/' + file) )
+                Y.append( label )
+        
+        if not os.path.exists('CompressedImages'): os.makedirs('CompressedImages')
+        
+        print('Compressed File saved as {}'.format(base_dir + '/CompressedImages/' + filename))
+        np.savez_compressed(base_dir + '/CompressedImages/' + filename, X=np.asarray(X), Y=np.asarray(Y))
 
 
 with tf.device('/CPU:0'):
     a = FaceRecognition()
-    a.loadDatasetAndCompress(base_dir + '/images/Labeled/')
+    a.loadDatasetAndCompress(base_dir + '/images/Labeled/', 'dataset.npz')
 
     # Kurang Train Model, Deteksi, dll

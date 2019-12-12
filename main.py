@@ -26,9 +26,6 @@ class FaceRecognition:
     def makeReactangleFaces(self, frame :np.ndarray, rect :np.ndarray):
         cv2.rectangle(frame, ( int(rect[0]), int(rect[2]) ), ( int(rect[1]), int(rect[3]) ), ( 0, 155, 255 ), 2)
     
-    def getFaces(self, frame :np.ndarray, rect :np.ndarray) -> list:
-        return [ frame[ r[2]:r[3] , r[0]:r[1] ] for r in rect ]
-    
     def getFace(self, frame :np.ndarray, rect :np.ndarray) -> np.ndarray:
         return frame[ rect[2]:rect[3] , rect[0]:rect[1] ]
 
@@ -60,16 +57,6 @@ class FaceRecognition:
         
         print('Compressed File saved as {}'.format(base_dir + '/CompressedImages/' + filename))
         np.savez_compressed(base_dir + '/CompressedImages/' + filename, X=np.asarray(X), Y=np.asarray(Y))
-    
-    def embeddingDataTest(self, frame :np.ndarray):
-        faces = self.getFaces(frame, self.detectFaces(frame))
-        facesFeatures = []
-
-        for f in faces:
-            f = cv2.resize(f, (160, 160), interpolation=cv2.INTER_AREA)
-            facesFeatures.append( self.embedding(f) )
-        
-        return np.asarray(facesFeatures)
 
     def run(self, path :str):
         data = np.load(path)
@@ -91,6 +78,8 @@ class FaceRecognition:
 
         if (cap.isOpened()== False): print("Error opening video stream or file")
 
+        count = 0
+
         while(cap.isOpened()):
             now = datetime.now()
             ret, frame = cap.read()
@@ -106,7 +95,11 @@ class FaceRecognition:
                     Y_Pred = out_encoder.inverse_transform(Y_Pred)[0]
                     print(Y_Pred)
 
-                    log_file.write(now.strftime("%d/%m/%Y %H:%M:%S") + ' --> ' + Y_Pred + '\n')
+                    if((count % 10000) == 0): 
+                        log_file.write(now.strftime("%d/%m/%Y %H:%M:%S") + ' --> ' + Y_Pred + '\n')
+                        count = 0
+                    
+                    count += 1
                     
                     cv2.putText(frame, str(Y_Pred), (rect[0], rect[2] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, ( 0, 155, 255 ) )
 

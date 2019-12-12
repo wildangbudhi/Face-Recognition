@@ -68,36 +68,43 @@ class FaceRecognition:
         
         return np.asarray(facesFeatures)
 
-    def predict(self):
-        data = np.load(base_dir + '/CompressedImages/dataset.npz')
-        X_Train, Y_Train = data['X'], data['Y']
+    def train(self, path :str):
+        data = np.load(path)
+        self.X_Train, self.Y_Train = data['X'], data['Y']
 
-        print(Y_Train)
+        in_encoder = Normalizer(norm='l2')
+        self.X_Train = in_encoder.transform(self.X_Train)
+        self.X_Test = in_encoder.transform(self.X_Test.reshape(1, -1))
 
-        # TestData
-        testData = cv2.imread('yoga.jpg')
-        testData = self.embeddingDataTest(testData)
+        self.out_encoder = LabelEncoder()
+        self.out_encoder.fit(self.Y_Train)
+        self.Y_Train = self.out_encoder.transform(self.Y_Train)
 
-        for X_Test in testData:
-            in_encoder = Normalizer(norm='l2')
-            X_Train = in_encoder.transform(X_Train)
-            X_Test = in_encoder.transform(X_Test.reshape(1, -1))
+        self.SVCModel = SVC(kernel='linear', probability=True)
+        self.SVCModel.fit(self.X_Train, self.Y_Train)
 
-            out_encoder = LabelEncoder()
-            out_encoder.fit(Y_Train)
-            Y_Train = out_encoder.transform(Y_Train)
+    def runCamera(self):
+        cap = cv2.VideoCapture(0)
 
-            model = SVC(kernel='linear', probability=True)
-            model.fit(X_Train, Y_Train)
+        if (cap.isOpened()== False): print("Error opening video stream or file")
 
-            Y_Pred = model.predict(X_Test)
-            print(out_encoder.inverse_transform(Y_Pred))
+        while(cap.isOpened()):
+            ret, frame = cap.read()
+            if(ret):
+                rectFaces = self.detectFaces(frame)
+                self.makeReactangleFaces(frame, rectFaces)
 
-        
+                cv2.imshow('Frame',frame)
+                if cv2.waitKey(25) & 0xFF == ord('q'): break
+            else: break
+
+        cap.release()
+        cv2.destroyAllWindows()
 
 def main():
     a = FaceRecognition()
-    a.predict()
+    a.train(base_dir + '/CompressedImages/dataset.npz')
+    a.runCamera()
 
 if __name__ == "__main__":
     main()

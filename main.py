@@ -21,11 +21,14 @@ class FaceRecognition:
     def detectFaces(self, frame :np.ndarray) -> np.ndarray:
         faces = self.detector.detect_faces(frame)
         # x1 x2 y1 y2
-        return np.array([ [ face['box'][0], ( face['box'][0] + face['box'][2] ), face['box'][1], ( face['box'][1] + face['box'][3] ) ] for face in faces ], dtype=float)
+        return np.array([ [ face['box'][0], ( face['box'][0] + face['box'][2] ), face['box'][1], ( face['box'][1] + face['box'][3] ) ] for face in faces ], dtype=int)
     
     def makeReactangleFaces(self, frame :np.ndarray, rect :np.ndarray):
         cv2.rectangle(frame, ( int(rect[0]), int(rect[2]) ), ( int(rect[1]), int(rect[3]) ), ( 0, 155, 255 ), 2)
     
+    def getFaces(self, frame :np.ndarray, rect :np.ndarray) -> list:
+        return [ frame[ r[2]:r[3] , r[0]:r[1] ] for r in rect ]
+
     def saveFaceFromFrame(self, path :str, frame :np.ndarray):
         cv2.imwrite(path, frame)
     
@@ -55,16 +58,41 @@ class FaceRecognition:
         print('Compressed File saved as {}'.format(base_dir + '/CompressedImages/' + filename))
         np.savez_compressed(base_dir + '/CompressedImages/' + filename, X=np.asarray(X), Y=np.asarray(Y))
     
+    def embeddingDataTest(self, frame :np.ndarray):
+        faces = self.getFaces(frame, self.detectFaces(frame))
+        facesFeatures = []
+
+        for f in faces:
+            f = cv2.resize(f, (160, 160), interpolation=cv2.INTER_AREA)
+            facesFeatures.append( self.embedding(f) )
+        
+        return np.asarray(facesFeatures)
+
     def predict(self):
         data = np.load(base_dir + '/CompressedImages/dataset.npz')
         X_Train, Y_Train = data['X'], data['Y']
 
+        print(Y_Train)
+
         # TestData
-        X_Test = cv2.imread('rangga.jpg')
-        facesRect = self.detectFaces(X_Test)
-        self.makeReactangleFaces(X_Test, facesRect[0])
-        cv2.imshow('Image', X_Test)
-        cv2.waitKey(0)
+        testData = cv2.imread('yoga.jpg')
+        testData = self.embeddingDataTest(testData)
+
+        for X_Test in testData:
+            in_encoder = Normalizer(norm='l2')
+            X_Train = in_encoder.transform(X_Train)
+            X_Test = in_encoder.transform(X_Test.reshape(1, -1))
+
+            out_encoder = LabelEncoder()
+            out_encoder.fit(Y_Train)
+            Y_Train = out_encoder.transform(Y_Train)
+
+            model = SVC(kernel='linear', probability=True)
+            model.fit(X_Train, Y_Train)
+
+            Y_Pred = model.predict(X_Test)
+            print(out_encoder.inverse_transform(Y_Pred))
+
         
 
 def main():

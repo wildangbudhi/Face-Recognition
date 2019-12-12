@@ -85,7 +85,7 @@ class FaceRecognition:
         SVCModel = SVC(kernel='linear', probability=True)
         SVCModel.fit(X_Train, Y_Train)
 
-        log_file = open('log.txt', 'w')
+        log_file = open('log.txt', 'a')
 
         cap = cv2.VideoCapture(0)
 
@@ -106,7 +106,7 @@ class FaceRecognition:
                     Y_Pred = out_encoder.inverse_transform(Y_Pred)[0]
                     print(Y_Pred)
 
-                    log_file.write(now.strftime("%d/%m/%Y %H:%M:%S") + ' --> ' + Y_Pred)
+                    log_file.write(now.strftime("%d/%m/%Y %H:%M:%S") + ' --> ' + Y_Pred + '\n')
                     
                     cv2.putText(frame, str(Y_Pred), (rect[0], rect[2] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, ( 0, 155, 255 ) )
 

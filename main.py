@@ -11,6 +11,7 @@ class FaceRecognition:
     def __init__(self):
         self.detector = MTCNN()
         self.model = load_model(base_dir + '/facenet/model/facenet_keras.h5')
+        print('Detector and Model Loaded')
     
     def detectFaces(self, frame :np.ndarray) -> np.ndarray:
         faces = self.detector.detect_faces(frame)
@@ -23,14 +24,21 @@ class FaceRecognition:
     def saveFaceFromFrame(self, path :str, frame :np.ndarray):
         cv2.imwrite(path, frame)
     
-    def loadDatasetAndCompress(self, path :str, filename :str):
+    def loadDatasetAndEmbedding(self, path :str, filename :str):
         print('Load Dataset and Compressing')
 
         X, Y = [], []
 
         for label in os.listdir(path):
             for file in os.listdir(path + label + '/'):
-                X.append( cv2.imread(path + label + '/' + file) )
+                image = cv2.imread(path + label + '/' + file)
+                image = cv2.resize(image, (160, 160), interpolation=cv2.INTER_AREA)
+                mean, std = image.mean(), image.std()
+                image = (image - mean) / std
+                image = np.expand_dims(image, axis=0)
+                image = self.model.predict(image)
+
+                X.append( image )
                 Y.append( label )
         
         if not os.path.exists('CompressedImages'): os.makedirs('CompressedImages')
@@ -38,9 +46,11 @@ class FaceRecognition:
         print('Compressed File saved as {}'.format(base_dir + '/CompressedImages/' + filename))
         np.savez_compressed(base_dir + '/CompressedImages/' + filename, X=np.asarray(X), Y=np.asarray(Y))
 
-
-with tf.device('/CPU:0'):
+def main():
     a = FaceRecognition()
-    a.loadDatasetAndCompress(base_dir + '/images/Labeled/', 'dataset.npz')
+    a.loadDatasetAndEmbedding(base_dir + '/images/Labeled/', 'dataset.npz')
+
+if __name__ == "__main__":
+    main()
 
     # Kurang Train Model, Deteksi, dll

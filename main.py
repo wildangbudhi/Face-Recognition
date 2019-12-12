@@ -101,7 +101,7 @@ class FaceRecognition:
                     
                     count += 1
                     
-                    cv2.putText(frame, str(Y_Pred), (rect[0], rect[2] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, ( 0, 155, 255 ) )
+                    cv2.putText(frame, str(Y_Pred) + ' %.3f'%rect[4], (rect[0], rect[2] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, ( 0, 155, 255 ) )
 
                 cv2.imshow('Frame',frame)
                 if cv2.waitKey(25) & 0xFF == ord('q'): break

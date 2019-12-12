@@ -69,7 +69,7 @@ class FaceRecognition:
         out_encoder.fit(Y_Train)
         Y_Train = out_encoder.transform(Y_Train)
 
-        SVCModel = SVC(kernel='linear', probability=True)
+        SVCModel = SVC(kernel='linear', probability=True, decision_function_shape='ovo')
         SVCModel.fit(X_Train, Y_Train)
 
         log_file = open('log.txt', 'a')
@@ -92,16 +92,18 @@ class FaceRecognition:
                     face = self.embedding(face)
                     face = in_encoder.transform(face.reshape(1, -1))
                     Y_Pred = SVCModel.predict(face)
+                    Y_Pred_proba = SVCModel.decision_function(face)
+                    Y_Pred_proba = Y_Pred_proba[0, Y_Pred] * 100
                     Y_Pred = out_encoder.inverse_transform(Y_Pred)[0]
                     print(Y_Pred)
 
-                    if((count % 100) == 0): 
-                        log_file.write(now.strftime("%d/%m/%Y %H:%M:%S") + ' --> ' + Y_Pred + '\n')
-                        count = 0
-                    
-                    count += 1
-                    
-                    cv2.putText(frame, str(Y_Pred) + ' %.3f'%rect[4], (rect[0], rect[2] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, ( 0, 155, 255 ) )
+                    if(Y_Pred_proba > 0):
+                        if((count % 100) == 0): 
+                            log_file.write(now.strftime("%d/%m/%Y %H:%M:%S") + ' --> ' + Y_Pred + '\n')
+                            count = 0
+                        
+                        count += 1
+                        cv2.putText(frame, str(Y_Pred) + ' : ' + str(round(Y_Pred_proba[0], 2)) + '%', (rect[0], rect[2] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, ( 0, 155, 255 ) )
 
                 cv2.imshow('Frame',frame)
                 if cv2.waitKey(25) & 0xFF == ord('q'): break

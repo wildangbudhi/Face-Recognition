@@ -103,7 +103,7 @@ class FaceRecognition:
                     Y_Pred = out_encoder.inverse_transform(Y_Pred)[0]
                     print(Y_Pred)
                     
-                    cv2.putText(frame, str(Y_Pred), (rect[0], rect[2] - 5))
+                    cv2.putText(frame, str(Y_Pred), (rect[0], rect[2] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, ( 0, 155, 255 ) )
 
                 cv2.imshow('Frame',frame)
                 if cv2.waitKey(25) & 0xFF == ord('q'): break

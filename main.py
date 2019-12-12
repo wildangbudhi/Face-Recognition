@@ -16,6 +16,7 @@ class FaceRecognition:
     def __init__(self):
         self.detector = MTCNN()
         self.model = load_model(base_dir + '/facenet/model/facenet_keras.h5')
+        self.X_Test = self.Y_Train = self.out_encoder = self.SVCModel = None
         print('Detector and Model Loaded')
     
     def detectFaces(self, frame :np.ndarray) -> np.ndarray:

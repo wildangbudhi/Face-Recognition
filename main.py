@@ -16,7 +16,6 @@ class FaceRecognition:
     def __init__(self):
         self.detector = MTCNN()
         self.model = load_model(base_dir + '/facenet/model/facenet_keras.h5')
-        self.X_Test = self.Y_Train = self.out_encoder = self.SVCModel = None
         print('Detector and Model Loaded')
     
     def detectFaces(self, frame :np.ndarray) -> np.ndarray:
@@ -29,6 +28,9 @@ class FaceRecognition:
     
     def getFaces(self, frame :np.ndarray, rect :np.ndarray) -> list:
         return [ frame[ r[2]:r[3] , r[0]:r[1] ] for r in rect ]
+    
+    def getFace(self, frame :np.ndarray, rect :np.ndarray) -> np.ndarray:
+        return frame[ rect[2]:rect[3] , rect[0]:rect[1] ]
 
     def saveFaceFromFrame(self, path :str, frame :np.ndarray):
         cv2.imwrite(path, frame)
@@ -75,14 +77,13 @@ class FaceRecognition:
 
         in_encoder = Normalizer(norm='l2')
         X_Train = in_encoder.transform(X_Train)
-        X_Test = in_encoder.transform(X_Test.reshape(1, -1))
 
         out_encoder = LabelEncoder()
         out_encoder.fit(Y_Train)
         Y_Train = out_encoder.transform(Y_Train)
 
         SVCModel = SVC(kernel='linear', probability=True)
-        SVCModel.fit(self.X_Train, self.Y_Train)
+        SVCModel.fit(X_Train, Y_Train)
 
         cap = cv2.VideoCapture(0)
 
@@ -92,7 +93,17 @@ class FaceRecognition:
             ret, frame = cap.read()
             if(ret):
                 rectFaces = self.detectFaces(frame)
-                self.makeReactangleFaces(frame, rectFaces)
+                for rect in rectFaces:
+                    self.makeReactangleFaces(frame, rect)
+                    face = self.getFace(frame, rect)
+                    face = cv2.resize(face, (160, 160), interpolation=cv2.INTER_AREA)
+                    face = self.embedding(face)
+                    face = in_encoder.transform(face.reshape(1, -1))
+                    Y_Pred = SVCModel.predict(face)
+                    Y_Pred = out_encoder.inverse_transform(Y_Pred)[0]
+                    print(Y_Pred)
+                    
+                    cv2.putText
 
                 cv2.imshow('Frame',frame)
                 if cv2.waitKey(25) & 0xFF == ord('q'): break

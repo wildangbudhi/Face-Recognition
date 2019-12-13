@@ -48,9 +48,11 @@ class FaceRecognition:
             print(label)
             for file in os.listdir(path + label + '/'):
                 image = cv2.imread(path + label + '/' + file)
-                if(len(image) > 0):
+                
+                try:
                     image = cv2.resize(image, (160, 160), interpolation=cv2.INTER_AREA)
-                else:
+                except Exception as e:
+                    print('image'+str(e))
                     break
                 image = self.embedding(image)
 
@@ -78,7 +80,7 @@ class FaceRecognition:
 
         log_file = open('log.txt', 'a')
 
-        cap = cv2.VideoCapture(1)
+        cap = cv2.VideoCapture(0) #0 for webcam 1 for external camera
 
         if (cap.isOpened()== False): print("Error opening video stream or file")
 
@@ -92,9 +94,11 @@ class FaceRecognition:
                 for rect in rectFaces:
                     self.makeReactangleFaces(frame, rect)
                     face = self.getFace(frame, rect)
-                    if(len(face) > 0):
+                    
+                    try:
                         face = cv2.resize(face, (160, 160), interpolation=cv2.INTER_AREA)
-                    else:
+                    except Exception as e:
+                        print('face'+str(e))
                         break
                     face = self.embedding(face)
                     face = in_encoder.transform(face.reshape(1, -1))

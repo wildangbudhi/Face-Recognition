@@ -45,6 +45,7 @@ class FaceRecognition:
         X, Y = [], []
 
         for label in os.listdir(path):
+            print(label)
             for file in os.listdir(path + label + '/'):
                 image = cv2.imread(path + label + '/' + file)
                 if(len(image) > 0):
@@ -127,7 +128,8 @@ class FaceRecognition:
 
 def main():
     a = FaceRecognition()
-    a.run(base_dir + '/CompressedImages/dataset.npz')
+    a.loadDatasetAndEmbedding(base_dir + '/images/Labeled/', 'dataset.npz')
+    # a.run(base_dir + '/CompressedImages/dataset.npz')
 
 if __name__ == "__main__":
     main()

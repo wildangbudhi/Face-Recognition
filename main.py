@@ -47,8 +47,9 @@ class FaceRecognition:
         for label in os.listdir(path):
             for file in os.listdir(path + label + '/'):
                 image = cv2.imread(path + label + '/' + file)
-                if(not len(image) == 0):
+                if(len(image) > 0):
                     image = cv2.resize(image, (160, 160), interpolation=cv2.INTER_AREA)
+                else:
                     break
                 image = self.embedding(image)
 
@@ -90,8 +91,9 @@ class FaceRecognition:
                 for rect in rectFaces:
                     self.makeReactangleFaces(frame, rect)
                     face = self.getFace(frame, rect)
-                    if(not len(face) == 0):
+                    if(len(face) > 0):
                         face = cv2.resize(face, (160, 160), interpolation=cv2.INTER_AREA)
+                    else:
                         break
                     face = self.embedding(face)
                     face = in_encoder.transform(face.reshape(1, -1))

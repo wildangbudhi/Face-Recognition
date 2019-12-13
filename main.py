@@ -47,7 +47,9 @@ class FaceRecognition:
         for label in os.listdir(path):
             for file in os.listdir(path + label + '/'):
                 image = cv2.imread(path + label + '/' + file)
-                image = cv2.resize(image, (160, 160), interpolation=cv2.INTER_AREA)
+                if(not len(image) == 0):
+                    image = cv2.resize(image, (160, 160), interpolation=cv2.INTER_AREA)
+                    break
                 image = self.embedding(image)
 
                 X.append( image )
@@ -74,7 +76,7 @@ class FaceRecognition:
 
         log_file = open('log.txt', 'a')
 
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(1)
 
         if (cap.isOpened()== False): print("Error opening video stream or file")
 
@@ -88,7 +90,9 @@ class FaceRecognition:
                 for rect in rectFaces:
                     self.makeReactangleFaces(frame, rect)
                     face = self.getFace(frame, rect)
-                    face = cv2.resize(face, (160, 160), interpolation=cv2.INTER_AREA)
+                    if(not len(face) == 0):
+                        face = cv2.resize(face, (160, 160), interpolation=cv2.INTER_AREA)
+                        break
                     face = self.embedding(face)
                     face = in_encoder.transform(face.reshape(1, -1))
                     Y_Pred = SVCModel.predict(face)
